@@ -127,6 +127,14 @@
         <div class="footer">
             <p>作者推特: <a href="https://x.com/0xXIAOc" target="_blank">https://x.com/0xXIAOc</a></p>
         </div>
+
+        <div>
+            <h2>查询结果统计:</h2>
+            <p>查询地址数量: <span id="total-addresses">0</span></p>
+            <p>有XP的地址: <span id="addresses-with-xp">0</span></p>
+            <p>没有XP的地址: <span id="addresses-without-xp">0</span></p>
+            <p>XP总和: <span id="total-xp">0</span></p>
+        </div>
     </div>
 
     <script>
@@ -144,10 +152,22 @@
 
             let walletNumber = 1; // 钱包编号，从1开始
 
+            let totalXp = 0;
+            let addressesWithXp = 0;
+            let addressesWithoutXp = 0;
+
             // 使用 Promise.all 并行处理所有地址
             try {
                 const promises = addresses.map(async (address) => {
                     const result = await getUserData(address, walletNumber++);
+                    // 更新统计数据
+                    totalXp += result.xp !== '数据不可用' ? result.xp : 0;
+                    if (result.xp !== '数据不可用' && result.xp > 0) {
+                        addressesWithXp++;
+                    } else {
+                        addressesWithoutXp++;
+                    }
+
                     return result;
                 });
 
@@ -164,6 +184,12 @@
                     `;
                     resultsElement.appendChild(resultRow);
                 });
+
+                // 更新查询统计数据
+                document.getElementById('total-addresses').innerText = addresses.length;
+                document.getElementById('addresses-with-xp').innerText = addressesWithXp;
+                document.getElementById('addresses-without-xp').innerText = addressesWithoutXp;
+                document.getElementById('total-xp').innerText = totalXp;
 
             } catch (error) {
                 console.error('Error during batch query:', error);
